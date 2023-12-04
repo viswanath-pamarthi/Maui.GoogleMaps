@@ -60,7 +60,7 @@
 	</ItemGroup>-->
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\lib\Maui.GoogleMaps\Maui.GoogleMaps.csproj" />
+	  <ProjectReference Include="..\..\lib\Maui.GoogleMaps\Maui.GoogleMaps.Clustering.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

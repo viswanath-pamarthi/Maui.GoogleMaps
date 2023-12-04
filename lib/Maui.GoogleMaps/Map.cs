@@ -5,6 +5,7 @@ using Maui.GoogleMaps.Internals;
 using Maui.GoogleMaps.Helpers;
 using Maui.GoogleMaps.Extensions;
 using System.ComponentModel;
+using Maui.GoogleMaps.Clustering;
 
 namespace Maui.GoogleMaps
 {
@@ -49,6 +50,8 @@ namespace Maui.GoogleMaps
 
         public static readonly BindableProperty PaddingProperty = BindableProperty.Create(nameof(PaddingProperty), typeof(Thickness), typeof(Map), default(Thickness));
 
+        public static readonly BindableProperty ClusterOptionsProperty = BindableProperty.Create(nameof(ClusterOptionsProperty), typeof(ClusterOptions), typeof(Map), default(ClusterOptions));
+
         bool _useMoveToRegisonAsInitialBounds = true;
 
         public static readonly BindableProperty CameraPositionProperty = BindableProperty.Create(
@@ -64,6 +67,34 @@ namespace Maui.GoogleMaps
         readonly ObservableCollection<Circle> _circles = new ObservableCollection<Circle>();
         readonly ObservableCollection<TileLayer> _tileLayers = new ObservableCollection<TileLayer>();
         readonly ObservableCollection<GroundOverlay> _groundOverlays = new ObservableCollection<GroundOverlay>();
+
+        public event EventHandler<ClusterClickedEventArgs> ClusterClicked;
+        internal Action OnCluster { get; set; }
+        internal bool PendingClusterRequest { get; set; }
+        public bool IsClusteringEnabled { get; set; } = false;
+        public ClusterOptions ClusterOptions
+        {
+            get => (ClusterOptions)GetValue(ClusterOptionsProperty);
+            set => SetValue(ClusterOptionsProperty, value);
+        }
+
+        public void Cluster()
+        {
+            SendCluster();
+        }
+        private void SendCluster()
+        {
+            if (OnCluster != null)
+                OnCluster.Invoke();
+            else
+                PendingClusterRequest = true;
+        }
+
+        internal void SendClusterClicked(int itemsCount, IEnumerable<Pin> pins, Position position)
+        {
+            var args = new ClusterClickedEventArgs(itemsCount, pins, position);
+            ClusterClicked?.Invoke(this, args);
+        }
 
         public event EventHandler<PinClickedEventArgs> PinClicked;
         public event EventHandler<SelectedPinChangedEventArgs> SelectedPinChanged;
@@ -107,6 +138,8 @@ namespace Maui.GoogleMaps
 
         public Map()
         {
+            ClusterOptions = new ClusterOptions();
+
             VerticalOptions = HorizontalOptions = LayoutOptions.Fill;
 
             _pins.CollectionChanged += PinsOnCollectionChanged;

@@ -7,6 +7,7 @@ using Maui.GoogleMaps.Logics.iOS;
 using Maui.GoogleMaps.Logics;
 using Microsoft.Maui.Handlers;
 using Maui.GoogleMaps.iOS.Extensions;
+using Maui.GoogleMaps.Platforms.Logics.iOS;
 
 namespace Maui.GoogleMaps.Handlers
 {
@@ -57,6 +58,13 @@ namespace Maui.GoogleMaps.Handlers
                 new GroundOverlayLogic(Config.ImageFactory)
             };
 
+            if (Map.IsClusteringEnabled)
+            {                
+                Logics?.Remove(Logics.OfType<PinLogic>().First());
+                Logics.Add(new ClusterLogic(Config.ImageFactory,
+               OnMarkerCreating, OnMarkerCreated, OnMarkerDeleting,
+               OnMarkerDeleted));
+            }
             _cameraLogic = new CameraLogic(() =>
             {
                 OnCameraPositionChanged(NativeMap.Camera);

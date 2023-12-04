@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-android</TargetFramework>
+	  <!--<OutputType>Library</OutputType>-->
+    <SupportedOSPlatformVersion>14</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  <!--<DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>-->
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.15" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="118.1.0.3" />
+  </ItemGroup>
+  <!--<ItemGroup>
+    <None Remove="android-maps-utils-0.5plus.aar" />
+  </ItemGroup>-->
+</Project>

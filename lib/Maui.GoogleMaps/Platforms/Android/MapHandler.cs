@@ -1,4 +1,5 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.Graphics;
@@ -9,6 +10,7 @@ using Maui.GoogleMaps.Android.Logics;
 using Maui.GoogleMaps.Internals;
 using Maui.GoogleMaps.Logics;
 using Maui.GoogleMaps.Logics.Android;
+using Maui.GoogleMaps.Platforms.Logics.Android;
 using Microsoft.Maui.Handlers;
 using Math = System.Math;
 
@@ -19,6 +21,7 @@ namespace Maui.GoogleMaps.Handlers
         readonly OnMapClickListener onMapClickListener = new();
         readonly OnMapLongClickListener onMapLongClickListener = new();
         readonly OnMyLocationButtonClickListener onMyLocationButtonClickListener = new();
+        ClusterLogic clusterLogic;
 
         CameraLogic _cameraLogic;
         UiSettingsLogic _uiSettingsLogic = new();
@@ -69,8 +72,7 @@ namespace Maui.GoogleMaps.Handlers
         }
 
         protected override async void ConnectHandler(MapView platformView)
-        {
-
+        {                            
             _cameraLogic = new CameraLogic(UpdateVisibleRegion);
 
             Logics = new List<BaseLogic<GoogleMap>>
@@ -83,6 +85,15 @@ namespace Maui.GoogleMaps.Handlers
                 new TileLayerLogic(),
                 new GroundOverlayLogic(Context, Config.BitmapDescriptorFactory)
             };
+
+            if (Map.IsClusteringEnabled)
+            {
+                clusterLogic = new ClusterLogic(Context, Config.BitmapDescriptorFactory,
+               OnClusteredMarkerCreating, OnClusteredMarkerCreated, OnClusteredMarkerDeleting,
+               OnClusteredMarkerDeleted);
+                Logics?.Remove(Logics.OfType<PinLogic>().First());
+                Logics.Add(clusterLogic);
+            }
 
             var activity = Platform.CurrentActivity;
 
@@ -109,6 +120,45 @@ namespace Maui.GoogleMaps.Handlers
             base.ConnectHandler(platformView);
         }
 
+        /// <summary>
+        /// Call when before marker create.
+        /// You can override your custom renderer for customize marker.
+        /// </summary>
+        /// <param name="outerItem">the pin.</param>
+        /// <param name="innerItem">the marker options.</param>
+        protected virtual void OnClusteredMarkerCreating(Pin outerItem, MarkerOptions innerItem)
+        {
+        }
+
+        /// <summary>
+        /// Call when after marker create.
+        /// You can override your custom renderer for customize marker.
+        /// </summary>
+        /// <param name="outerItem">the pin.</param>
+        /// <param name="innerItem">the clustered marker.</param>
+        protected virtual void OnClusteredMarkerCreated(Pin outerItem, ClusteredMarker innerItem)
+        {
+        }
+
+        /// <summary>
+        /// Call when before marker delete.
+        /// You can override your custom renderer for customize marker.
+        /// </summary>
+        /// <param name="outerItem">the pin.</param>
+        /// <param name="innerItem">the clustered marker.</param>
+        protected virtual void OnClusteredMarkerDeleting(Pin outerItem, ClusteredMarker innerItem)
+        {
+        }
+
+        /// <summary>
+        /// Call when after marker delete.
+        /// You can override your custom renderer for customize marker.
+        /// </summary>
+        /// <param name="outerItem">the pin.</param>
+        /// <param name="innerItem">the clustered marker.</param>
+        protected virtual void OnClusteredMarkerDeleted(Pin outerItem, ClusteredMarker innerItem)
+        {
+        }
         protected override void DisconnectHandler(MapView platformView)
         {
             if (!_disposed)
@@ -162,6 +212,8 @@ namespace Maui.GoogleMaps.Handlers
                 _uiSettingsLogic.Initialize();
 
                 MapMapper.UpdateProperties(this, VirtualView);
+                if (Map.IsClusteringEnabled && Map.PendingClusterRequest)
+                    clusterLogic.HandleClusterRequest();
             }
 
             _ready = true;
